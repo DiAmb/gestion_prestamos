@@ -8,14 +8,12 @@ def prestar_libro(id_usuario, id_libro):
     cursor.execute("SELECT disponible FROM libros WHERE id_libro = %s", (id_libro,))
     resultado = cursor.fetchone()
     if resultado is None:
-        print("Libro no encontrado.")
         conexion.close()
-        return
+        return "Libro no encontrado."
 
     if not resultado[0]:
-        print("El libro no está disponible.")
         conexion.close()
-        return
+        return "El libro no está disponible."
 
     cursor.execute(
         "INSERT INTO prestamos (id_usuario, id_libro) VALUES (%s, %s)",
@@ -23,30 +21,43 @@ def prestar_libro(id_usuario, id_libro):
     )
 
     cursor.execute("UPDATE libros SET disponible = FALSE WHERE id_libro = %s", (id_libro,))
-
     conexion.commit()
-    print(f"El libro con ID {id_libro} ha sido prestado al usuario con ID {id_usuario}.")
     conexion.close()
+    
+    return "Libro prestado exitosamente."
 
 def devolver_libro(id_prestamo):
     conexion = crear_conexion()
     cursor = conexion.cursor()
 
-    cursor.execute("SELECT id_libro FROM prestamos WHERE id_prestamo = %s", (id_prestamo,))
+    cursor.execute("SELECT id_libro, fecha_devolucion FROM prestamos WHERE id_prestamo = %s", (id_prestamo,))
     resultado = cursor.fetchone()
 
     if resultado is None:
-        print("Préstamo no encontrado.")
         conexion.close()
-        return
+        return "Préstamo no encontrado."
 
-    id_libro = resultado[0]
+    id_libro, fecha_devolucion = resultado
+
+    cursor.execute("SELECT disponible FROM libros WHERE id_libro = %s", (id_libro,))
+    resultado_libro = cursor.fetchone()
+
+    if resultado_libro is None:
+        conexion.close()
+        return "Libro no encontrado."
+
+    if resultado_libro[0]: 
+        conexion.close()
+        return "El libro ya ha sido devuelto previamente."
+
     cursor.execute("UPDATE libros SET disponible = TRUE WHERE id_libro = %s", (id_libro,))
     cursor.execute("UPDATE prestamos SET fecha_devolucion = NOW() WHERE id_prestamo = %s", (id_prestamo,))
 
     conexion.commit()
-    print(f"El libro con ID {id_libro} ha sido devuelto.")
     conexion.close()
+    
+    return "Libro devuelto exitosamente."
+
 
 def obtener_libros_disponibles():
     conexion = crear_conexion()

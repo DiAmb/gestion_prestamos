@@ -88,22 +88,29 @@ def prestar_libro_vista():
         data = request.json
         id_usuario = data.get("id_usuario")
         id_libro = data.get("id_libro")
+        
         if id_usuario and id_libro:
-            prestar_libro(id_usuario, id_libro)
-            return jsonify({"mensaje": "Libro prestado exitosamente."})
+            mensaje = prestar_libro(id_usuario, id_libro)
+            if mensaje == "Libro prestado exitosamente.":
+                return jsonify({"mensaje": mensaje}), 200
+            else:
+                return jsonify({"mensaje": mensaje}), 400
         return jsonify({"mensaje": "Faltan datos para prestar el libro."}), 400
     except Exception as e:
         return jsonify({"mensaje": "Error al prestar el libro.", "error": str(e)}), 500
 
-# Ruta para devolver un libro
 @app.route('/prestamos/devolver', methods=['POST'])
 def devolver_libro_vista():
     try:
         data = request.json
         id_prestamo = data.get("id_prestamo")
+        
         if id_prestamo:
-            devolver_libro(id_prestamo)
-            return jsonify({"mensaje": "Libro devuelto exitosamente."})
+            mensaje = devolver_libro(id_prestamo)
+            if mensaje == "Libro devuelto exitosamente.":
+                return jsonify({"mensaje": mensaje}), 200
+            else:
+                return jsonify({"mensaje": mensaje}), 400
         return jsonify({"mensaje": "Faltan datos para devolver el libro."}), 400
     except Exception as e:
         return jsonify({"mensaje": "Error al devolver el libro.", "error": str(e)}), 500
